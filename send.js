@@ -90,4 +90,4 @@ async function handleSendFormSubmit(e, provider, connection, uiElements) {
 window.sendFunctions = {
     sendSol,
     handleSendFormSubmit
-}; 
+};

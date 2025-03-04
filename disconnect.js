@@ -39,4 +39,4 @@ async function disconnectWallet(provider, uiElements) {
 // Export functions
 window.disconnectFunctions = {
     disconnectWallet
-}; 
+};

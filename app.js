@@ -117,4 +117,4 @@ async function generateChildKeypairs(provider, numKeys = 5) {
 window.walletFunctions = {
     connectWallet,
     generateChildKeypairs
-}; 
+};

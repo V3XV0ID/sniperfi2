@@ -75,4 +75,4 @@ async function generateNewWallet() {
 // Export browser-compatible wallet functions
 window.browserWalletFunctions = {
     generateNewWallet
-}; 
+};

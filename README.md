@@ -1,53 +1,78 @@
-# SniperFi2
+# Solana Wallet Generator
 
-A modern Solana wallet generator and management tool with an intuitive UI.
+A web-based application for generating and managing Solana wallets. This tool provides a user-friendly interface for connecting to Phantom wallet, generating child wallets, and managing Solana assets.
 
 ## Features
 
-- **Connect to Phantom Wallet**: Seamlessly connect to your Phantom wallet
-- **View Wallet Information**: Display your wallet's public key and balance
-- **Send SOL**: Transfer SOL to other addresses
-- **Generate Child Wallets**: Create multiple wallets for different purposes
-- **Generate Standalone Wallets**: Create new wallets without connecting to Phantom
-- **Copy Functionality**: Easily copy wallet addresses and private keys
+- **Phantom Wallet Integration**: Seamlessly connect to your Phantom wallet
+- **Wallet Generation**: Create new Solana wallets with public and private keys
+- **Child Wallet Generation**: Generate multiple child wallets from a connected parent wallet
+- **Balance Checking**: View SOL balance for connected wallets
+- **Secure Key Management**: Private keys are handled securely and can be toggled between visible/hidden states
+- **Export Functionality**: Download wallet information as JSON files
+- **Devnet Support**: Built-in connection to Solana devnet for testing
 
-## Technologies
-
-- Solana Web3.js
-- Express.js backend
-- Vanilla JavaScript frontend
-- Modern CSS design
-
-## Setup
+## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/V3XV0ID/SniperFi2.git
-cd SniperFi2
+git clone https://github.com/yourusername/solana-wallet-generator.git
+cd solana-wallet-generator
 ```
 
-2. Install the dependencies:
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Start the server:
+3. Start the application:
 ```bash
 npm start
 ```
 
-4. Visit http://localhost:8000 in your browser
+## Usage
 
-## Security Notes
+### Connecting to Phantom Wallet
+1. Ensure you have the [Phantom Wallet](https://phantom.app/) browser extension installed
+2. Click the "Connect Phantom Wallet" button
+3. Approve the connection request in your Phantom wallet
 
-- Always keep your private keys secure and never share them
-- This tool is for educational purposes
-- Use the Solana devnet for testing
+### Generating Child Wallets
+1. Connect your Phantom wallet
+2. Enter the desired number of wallets (1-20)
+3. Click "Generate Wallets"
+4. View and manage generated wallets in the dashboard
+
+### Exporting Wallets
+- Click the "Download Wallets" button to save wallet information as a JSON file
+- Individual wallet information can be copied using the provided copy buttons
+
+### Checking Balances
+- Connected wallet balances are displayed automatically
+- Click the refresh button to update the balance
+
+## Security Considerations
+
+- Never share your private keys with anyone
+- Always verify transactions before signing
+- Keep your wallet's recovery phrase in a secure location
+- The application runs client-side to ensure your keys never leave your browser
+
+## Development
+
+This project uses:
+- Solana Web3.js for blockchain interactions
+- Vanilla JavaScript for frontend functionality
+- CSS for styling
 
 ## License
 
-ISC License
+MIT
 
-## Contribution
+## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request. 
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Disclaimer
+
+This tool is provided as-is. Always verify the generated addresses and test with small amounts first. The developers are not responsible for any loss of funds.

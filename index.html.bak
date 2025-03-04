@@ -33,4 +33,4 @@ async function refreshBalance(provider, connection, balanceElement, errorElement
 window.refreshBalanceFunctions = {
     getBalance,
     refreshBalance
-}; 
+};

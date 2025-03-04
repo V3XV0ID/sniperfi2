@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Dashboard - Solana Wallet Generator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Solana Wallet Dashboard</h1>
+        <div id="wallet-status">Not connected</div>
+    </header>
+
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Wallet Connection</h2>
+                </div>
+                <div class="card-body">
+                    <button id="connect-button" class="button primary-button">Connect Phantom Wallet</button>
+                    <button id="disconnect-button" class="button danger-button" style="display: none;">Disconnect</button>
+                </div>
+            </div>
+
+            <div id="wallet-info" class="card" style="display: none;">
+                <div class="card-header">
+                    <h2>Wallet Info</h2>
+                </div>
+                <div class="card-body">
+                    <div class="info-row">
+                        <span class="info-label">Public Key:</span>
+                        <span id="wallet-address" class="info-value">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Balance:</span>
+                        <span id="wallet-balance" class="info-value">-</span>
+                        <button id="refresh-balance" class="button small-button">Refresh</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div id="generate-wallets" class="card" style="display: none;">
+                <div class="card-header">
+                    <h2>Generate Child Wallets</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="num-wallets">Number of Wallets:</label>
+                        <input type="number" id="num-wallets" min="1" max="20" value="5" class="form-control">
+                    </div>
+                    <button id="generate-button" class="button primary-button">Generate Wallets</button>
+                    
+                    <div id="wallets-container" style="display: none;">
+                        <h3>Generated Wallets</h3>
+                        <div class="wallets-list" id="wallets-list"></div>
+                        <button id="download-wallets" class="button secondary-button">Download as JSON</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="create-wallet" class="card">
+                <div class="card-header">
+                    <h2>Create New Wallet</h2>
+                </div>
+                <div class="card-body">
+                    <p>Generate a new standalone Solana wallet with public and private keys.</p>
+                    <button id="create-wallet-button" class="button primary-button">Create New Wallet</button>
+                    
+                    <div id="new-wallet-info" style="display: none;">
+                        <div class="info-row">
+                            <span class="info-label">Public Key:</span>
+                            <span id="new-wallet-address" class="info-value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Private Key:</span>
+                            <div class="private-key-container">
+                                <input type="password" id="new-wallet-private-key" class="form-control" readonly>
+                                <button id="toggle-private-key" class="button small-button">Show</button>
+                            </div>
+                        </div>
+                        <div class="warning-box">
+                            <p>⚠️ IMPORTANT: Keep your private key secure! Never share it with anyone!</p>
+                        </div>
+                        <button id="download-new-wallet" class="button secondary-button">Download Wallet Info</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="error-container" class="error-message"></div>
+            <div id="transaction-status" class="status-message"></div>
+        </div>
+    </div>
+
+    <!-- Load Solana Web3 from CDN -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    
+    <!-- Load our application scripts -->
+    <script src="app.js"></script>
+    <script src="browser-wallet.js"></script>
+    <script src="disconnect.js"></script>
+    <script src="refresh-balance.js"></script>
+    <script src="send.js"></script>
+    
+    <script>
+        // DOM Elements
+        const connectButton = document.getElementById('connect-button');
+        const disconnectButton = document.getElementById('disconnect-button');
+        const walletStatus = document.getElementById('wallet-status');
+        const walletInfo = document.getElementById('wallet-info');
+        const walletAddress = document.getElementById('wallet-address');
+        const walletBalance = document.getElementById('wallet-balance');
+        const refreshBalanceButton = document.getElementById('refresh-balance');
+        const generateWalletsSection = document.getElementById('generate-wallets');
+        const generateButton = document.getElementById('generate-button');
+        const numWalletsInput = document.getElementById('num-wallets');
+        const walletsContainer = document.getElementById('wallets-container');
+        const walletsList = document.getElementById('wallets-list');
+        const downloadWalletsButton = document.getElementById('download-wallets');
+        const createWalletButton = document.getElementById('create-wallet-button');
+        const newWalletInfo = document.getElementById('new-wallet-info');
+        const newWalletAddress = document.getElementById('new-wallet-address');
+        const newWalletPrivateKey = document.getElementById('new-wallet-private-key');
+        const togglePrivateKeyButton = document.getElementById('toggle-private-key');
+        const downloadNewWalletButton = document.getElementById('download-new-wallet');
+        const errorContainer = document.getElementById('error-container');
+        const transactionStatus = document.getElementById('transaction-status');
+
+        // Global variables
+        let walletConnection = null;
+        let generatedWallets = [];
+        let newWallet = null;
+
+        // Connect to Phantom wallet
+        connectButton.addEventListener('click', async () => {
+            try {
+                errorContainer.textContent = '';
+                connectButton.disabled = true;
+                connectButton.textContent = 'Connecting...';
+                
+                // Use the connectWallet function from app.js
+                walletConnection = await window.walletFunctions.connectWallet();
+                
+                // Update UI
+                walletStatus.textContent = 'Connected';
+                walletStatus.classList.add('connected');
+                walletAddress.textContent = walletConnection.publicKey;
+                
+                // Show wallet sections
+                walletInfo.style.display = 'block';
+                generateWalletsSection.style.display = 'block';
+                disconnectButton.style.display = 'block';
+                connectButton.style.display = 'none';
+                
+                // Refresh balance
+                await refreshBalance();
+            } catch (error) {
+                errorContainer.textContent = error.message;
+                connectButton.disabled = false;
+                connectButton.textContent = 'Connect Phantom Wallet';
+            }
+        });
+
+        // Disconnect wallet
+        disconnectButton.addEventListener('click', async () => {
+            try {
+                if (walletConnection && walletConnection.provider) {
+                    // Use the disconnectWallet function from disconnect.js
+                    await window.disconnectFunctions.disconnectWallet(walletConnection.provider, {
+                        walletInfo,
+                        generateWallets: generateWalletsSection,
+                        connectButton,
+                        errorElement: errorContainer,
+                        transactionStatus
+                    });
+                    
+                    // Update UI
+                    walletStatus.textContent = 'Not connected';
+                    walletStatus.classList.remove('connected');
+                    disconnectButton.style.display = 'none';
+                    connectButton.style.display = 'block';
+                    walletConnection = null;
+                }
+            } catch (error) {
+                errorContainer.textContent = error.message;
+            }
+        });
+
+        // Refresh balance
+        async function refreshBalance() {
+            if (!walletConnection) return;
+            
+            try {
+                walletBalance.textContent = 'Loading...';
+                
+                // Create connection to Solana devnet
+                const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'));
+                
+                // Get balance
+                const publicKey = new solanaWeb3.PublicKey(walletConnection.publicKey);
+                const balance = await connection.getBalance(publicKey);
+                
+                // Convert lamports to SOL (1 SOL = 1,000,000,000 lamports)
+                const solBalance = balance / 1000000000;
+                
+                // Update UI
+                walletBalance.textContent = `${solBalance.toFixed(9)} SOL`;
+            } catch (error) {
+                walletBalance.textContent = 'Error loading balance';
+                console.error('Error refreshing balance:', error);
+            }
+        }
+
+        refreshBalanceButton.addEventListener('click', refreshBalance);
+
+        // Generate child wallets
+        generateButton.addEventListener('click', async () => {
+            if (!walletConnection) {
+                errorContainer.textContent = 'Please connect your wallet first';
+                return;
+            }
+            
+            try {
+                const numWallets = parseInt(numWalletsInput.value);
+                if (isNaN(numWallets) || numWallets < 1 || numWallets > 20) {
+                    errorContainer.textContent = 'Please enter a valid number between 1 and 20';
+                    return;
+                }
+                
+                generateButton.disabled = true;
+                generateButton.textContent = 'Generating...';
+                errorContainer.textContent = '';
+                
+                // Use the generateChildKeypairs function from app.js
+                generatedWallets = await window.walletFunctions.generateChildKeypairs(walletConnection.provider, numWallets);
+                
+                // Display wallets
+                displayGeneratedWallets(generatedWallets);
+                
+                // Enable download button
+                downloadWalletsButton.disabled = false;
+                
+                // Reset button
+                generateButton.disabled = false;
+                generateButton.textContent = 'Generate Wallets';
+            } catch (error) {
+                errorContainer.textContent = error.message;
+                generateButton.disabled = false;
+                generateButton.textContent = 'Generate Wallets';
+            }
+        });
+
+        // Display generated wallets
+        function displayGeneratedWallets(wallets) {
+            walletsList.innerHTML = '';
+            
+            wallets.forEach(wallet => {
+                const walletItem = document.createElement('div');
+                walletItem.className = 'wallet-item';
+                
+                walletItem.innerHTML = `
+                    <div class="wallet-header">
+                        <span class="wallet-index">Wallet #${wallet.index + 1}</span>
+                    </div>
+                    <div class="wallet-details">
+                        <div class="info-row">
+                            <span class="info-label">Public Key:</span>
+                            <span class="info-value">${wallet.publicKey}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Private Key:</span>
+                            <div class="private-key-container">
+                                <input type="password" class="form-control private-key-input" value="${wallet.secretKey}" readonly>
+                                <button class="button small-button toggle-key-btn">Show</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                walletsList.appendChild(walletItem);
+                
+                // Add event listener to toggle button
+                const toggleBtn = walletItem.querySelector('.toggle-key-btn');
+                const privateKeyInput = walletItem.querySelector('.private-key-input');
+                
+                toggleBtn.addEventListener('click', () => {
+                    if (privateKeyInput.type === 'password') {
+                        privateKeyInput.type = 'text';
+                        toggleBtn.textContent = 'Hide';
+                    } else {
+                        privateKeyInput.type = 'password';
+                        toggleBtn.textContent = 'Show';
+                    }
+                });
+            });
+            
+            walletsContainer.style.display = 'block';
+        }
+
+        // Download wallets as JSON
+        downloadWalletsButton.addEventListener('click', () => {
+            if (generatedWallets.length === 0) return;
+            
+            const dataStr = JSON.stringify(generatedWallets, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            
+            const exportName = 'solana-wallets-' + new Date().toISOString().slice(0, 10) + '.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportName);
+            linkElement.click();
+        });
+
+        // Create new standalone wallet
+        createWalletButton.addEventListener('click', async () => {
+            try {
+                createWalletButton.disabled = true;
+                createWalletButton.textContent = 'Creating...';
+                errorContainer.textContent = '';
+                
+                // Use the generateNewWallet function from browser-wallet.js
+                newWallet = await window.browserWalletFunctions.generateNewWallet();
+                
+                // Display wallet info
+                newWalletAddress.textContent = newWallet.publicKey;
+                newWalletPrivateKey.value = newWallet.secretKey;
+                newWalletInfo.style.display = 'block';
+                
+                // Reset button
+                createWalletButton.disabled = false;
+                createWalletButton.textContent = 'Create New Wallet';
+            } catch (error) {
+                errorContainer.textContent = error.message;
+                createWalletButton.disabled = false;
+                createWalletButton.textContent = 'Create New Wallet';
+            }
+        });
+
+        // Toggle private key visibility
+        togglePrivateKeyButton.addEventListener('click', () => {
+            if (newWalletPrivateKey.type === 'password') {
+                newWalletPrivateKey.type = 'text';
+                togglePrivateKeyButton.textContent = 'Hide';
+            } else {
+                newWalletPrivateKey.type = 'password';
+                togglePrivateKeyButton.textContent = 'Show';
+            }
+        });
+
+        // Download new wallet as JSON
+        downloadNewWalletButton.addEventListener('click', () => {
+            if (!newWallet) return;
+            
+            const dataStr = JSON.stringify(newWallet, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            
+            const exportName = 'solana-wallet-' + new Date().toISOString().slice(0, 10) + '.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportName);
+            linkElement.click();
+        });
+    </script>
+</body>
+</html>
